@@ -1,35 +1,82 @@
 import random
+#Тут я подключаю модуль рандома, за счёт которого и происходит генерация пароля
 
 symbols = ['a','b','c','d','e','f','g','i','j','k','l','m','n','o','p',
            'q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6',
            '7','8','9','0']
+#Это массив из символов, из которых будет состоять пароль, его спокойно можно изменить, и всё будет работать.
+
 
 passcount = int(input('Введите кол-во генерируемых паролей\n'))
+#Тут уже по сложнее.
+#Функция int() используется для преобразования текста в целочисленное значение
+#А получается этот самый текст из функции input(), в которой мы указываем текст, который будет отображаться при запросе у пользователя значения.
+#Небольшой лАйФФак. Если указать \n в тексте, последующий текст будет перенесён на новую строку.
+
+
 
 passlenghtmin = int(input('Введите минимальную длинну пароля\n'))
-
+#Тут мы указываем минимальную и максимальную длинну
 passlenghtmax = int(input('Введите максимальную длинну пароля\n'))
 
 passs = []
+#За ранее объявляем массив с паролями
 
-for i in range(passcount):
-    currentpass = ""
-    lenghtofpass = random.randint(passlenghtmin, passlenghtmax)
-    for c in range(lenghtofpass):
-        symbolindex = random.randint(0, len(symbols)-1)
-        uppercase = random.randint(0, 1)
-        letter = symbols[symbolindex]
-        if uppercase == 1: letter =  letter.upper()
-        currentpass += letter
-    passs.append(currentpass)
+duplicates = 0
 
-for p in passs:
-    print(p)
+def checkarray(array, value):
+    for i in array:
+        if i == value: return True
+
+try:
+    for i in range(passcount):
+        lenghtofpass = random.randint(passlenghtmin, passlenghtmax)
+        #random.randint() - получаем случайное целочисленное число. В аргументы этой функции передаём минимальное и максимальное значения, которыми выступают минимальная и максимальная длинна пароля.
+        while(True):
+            currentpass = ""
+            for c in range(lenghtofpass):
+                #Цикл в цикле. Довольно непроизводительный приём. Используем тот же приём с range(), только в аргументы функции уже передаём рандомно сгенерированную длинну пароля.
+                symbolindex = random.randint(0, len(symbols)-1)
+                #symbolindex - хранит в себе индекс символа, который будет добавляться к паролю. используем тот же randint, только во второй аргумент передаём небольшое выражение
+                #len(symbols)-1 - выражение, которое получает именно ДЛИННУ массива. от 1 и так далее. Но так как индексы у массива начинаются с нуля, мы отнимаем единицу.
+                #И в конце концов получаем случайное значение, за счёт которого мы потом впиндюрим в пароль символ.
+                uppercase = random.randint(0, 1)
+                # Это просто randint который либо вернёт 0, либо 1.
+                letter = symbols[symbolindex]
+                #Тут мы берём из массива с символами букву, которая берётся по индексу.
+                if uppercase == 1: letter =  letter.upper()
+                #Тут первое использование if в коде.
+                #Мы проверяем, равна ли переменная uppercase единице, и если да, то просто делаем букву большой.
+                currentpass += letter
+            if(not(checkarray(passs, currentpass))):
+                print(currentpass+":Оригинал")
+                break
+            else:
+                print(currentpass+":Дубликат")
+                duplicates += 1
+        passs.append(currentpass)
+    #А после того как тот цикл для генерации ОДНОГО пароля закончился, мы добавляем этот пароль в массив с паролями. И цикл начинается с начала.
+except KeyboardInterrupt:
+    pass
+
+    
+print("При генерации попалось дубликатов: " + str(duplicates))
 
 savetofile = input("Сохранить пароли в txt файл?[Y/N]\n").upper()
+#Тут мы спрашиваем у пользователя, сохранить ли файл с паролями или нет?
 
 if savetofile == "y".upper():
+    #Если пользователь указал Y, то мы спрашиваем имя файла, в который сохраним пароли.
     filename = input("Укажите имя файла\n")
     file = open(filename+".txt", "w")
+    #Тут мы открываем файл с именем которое указал пользователь на запись.
+    #Из-за флага "w" который указан сторым аргументом, если файл не существует, то скрипт сам его создаст
+    c = 1
     for p in passs:
-        file.write(p+"\n")
+        c+=1
+        file.write(p)
+        if c != (len(passs) + 1) :
+            file.write("\n")
+    #Тут мы перебираем массив с паролями, и при помощи функции write() записываем на каждую строчку по 1 паролю
+
+    file.close()
